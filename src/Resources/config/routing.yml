@@ -1,0 +1,5 @@
+trilobit_pixabay:
+    path: /trilobit/pixabay
+    defaults:
+        _controller: "TrilobitPixabayBundle:Pixabay:search"
+        _scope: backend

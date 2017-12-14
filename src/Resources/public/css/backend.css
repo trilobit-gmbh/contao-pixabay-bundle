@@ -1,0 +1,101 @@
+/**
+ * @file backend.css
+ * trilobit css files
+ *
+ * @author      Peter Adelmann
+ * @company     trilobit GmbH
+ * @team        Apache
+ * @email       peter.adelmann@trilobit.de
+ * @url         http://www.trilobit.de
+ *
+ * @version     2016-12-20_0815
+ *
+ * __update__: 201x-xx-xx / xx:xx:xx
+ */
+
+.header_pixabay {
+    background-size: contain;
+}
+
+
+.w25 {
+    width: calc(25% - 30px);
+    float: left;
+    height: 80px;
+}
+.w25.cbx {
+    height: 34px;
+}
+
+#pixabay_images .preview {
+    height: 400px;
+    width: calc(25% - 38px);
+    float: left;
+
+    border: 1px solid lightgray;
+    margin-bottom: 30px;
+    padding: 2px;
+    overflow: hidden;
+}
+#pixabay_images .preview label {
+    cursor: pointer;
+}
+
+#pixabay_images .preview.selected {
+    border-color: #589b0e;
+    background: #fdfdfd;
+}
+
+#pixabay_images .preview .image-container {
+    width: 100%;
+    height: 150px;
+    display: table;
+}
+
+#pixabay_images .preview .image-container a {
+    display: table-cell;
+    height: 100%;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#pixabay_images .preview .tl_show {
+    width: 100%;
+    margin: 18px 0%;
+}
+
+#pixabay_inform .hint ul,
+#pixabay_inform .hint li {
+    list-style: inherit;
+    margin-left: 10px;
+}
+
+#pixabay_images .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 100px auto;
+    background-color: #333;
+
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+    animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-scaleout {
+    0% { -webkit-transform: scale(0) }
+    100% {
+        -webkit-transform: scale(1.0);
+        opacity: 0;
+    }
+}
+
+@keyframes sk-scaleout {
+    0% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    } 100% {
+          -webkit-transform: scale(1.0);
+          transform: scale(1.0);
+          opacity: 0;
+      }
+}

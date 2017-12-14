@@ -1,0 +1,60 @@
+trilobit:
+    pixabay:
+        api:
+            q:
+            id:
+            lang:
+            response_group:
+            image_type:
+            orientation:
+            category:
+#            min_width: int
+#            min_height: int
+            editors_choice: bool
+            safesearch: bool
+            order:
+            per_page: int
+            page: int
+
+        image_type:
+            all:
+            photo:
+            illustration:
+            vector:
+
+        orientation:
+            all:
+            horizontal:
+            vertical:
+
+        category:
+            fashion:
+            nature:
+            backgrounds:
+            science:
+            education:
+            people:
+            feelings:
+            religion:
+            health:
+            places:
+            animals:
+            industry:
+            food:
+            computer:
+            sports:
+            transportation:
+            travel:
+            buildings:
+            business:
+            music:
+
+        order:
+            latest:
+            popular:
+
+        imageSource:
+            webformatURL:
+            largeImageURL:
+            fullHDURL:
+            imageURL:

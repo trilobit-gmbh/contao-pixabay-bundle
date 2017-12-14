@@ -10,7 +10,7 @@
 
 namespace Trilobit\PixabayBundle;
 
-use Config;
+use Contao\Config;
 use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\CoreBundle\Exception\InternalServerErrorException;
 use Contao\CoreBundle\Exception\ResponseException;
@@ -18,6 +18,7 @@ use Contao\CoreBundle\Picker\PickerInterface;
 use Contao\CoreBundle\Util\SymlinkUtil;
 use Contao\Image\ResizeConfiguration;
 use Contao\StringUtil;
+use Contao\System;
 use Environment;
 use Imagine\Gd\Imagine;
 use Symfony\Component\HttpFoundation\Response;
@@ -77,8 +78,9 @@ class DC_Folder_pixabay extends \DC_Folder
 
                 $arrApiDataHighResolution = array();
 
-                $blnHighResolution = (\Config::get('pixabayHighResolution') !== '' ? true : false);
-                $strImageSource    = (\Config::get('pixabayImageSource')    !== '' ? \Config::get('pixabayImageSource') : 'largeImageURL');
+                $blnHighResolution = Config::get('pixabayHighResolution');
+                $strImageSource    = (Config::get('pixabayImageSource')    !== '' ? Config::get('pixabayImageSource') : 'largeImageURL');
+
 
                 if (   $blnHighResolution
                     && isset($arrApiData['__api__']['parameter']['q'])
@@ -87,6 +89,12 @@ class DC_Folder_pixabay extends \DC_Folder
                     $arrApiData['__api__']['parameter']['response_group'] = 'high_resolution';
 
                     $arrApiDataHighResolution = PixabayApi::search(false, $arrApiData['__api__']['parameter']);
+                }
+
+                if (empty($arrApiData))
+                {
+                    \Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
+                    $this->reload();
                 }
 
                 // prepare default result
@@ -177,7 +185,7 @@ class DC_Folder_pixabay extends \DC_Folder
                         // Notify the user
                         \Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['MSC']['fileUploaded'], $strFileContao));
 
-                        $this->log('File "' . $strFileContao . '" has been uploaded', __METHOD__, TL_FILES);
+                        System::log('File "' . $strFileContao . '" has been uploaded', __METHOD__, TL_FILES);
 
 
                         $arrUploaded[] = $strFileContao;

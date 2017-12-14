@@ -125,94 +125,29 @@ class PixabayZone extends FileUpload
         </div>
     </fieldset>
 </div>
-';
-
-        $return .= <<< EOT
 
 <script>
     window.addEventListener("load", function(event) {
-        $$('div.tl_formbody_submit').addClass('invisible');
+        //$$(\'div.tl_formbody_submit\').addClass(\'invisible\');
     });
 
-    var pixabayForm       = $('pixabay_form');
-    var pixabayImages     = $('pixabay_images');
-    var pixabayPagination = $('pixabay_pagination');
-    var pixabayPage       = 1;
-    var pixabayPages      = 1;
-    var pixabayApiKey     =
-EOT
-.' \''.Config::get('pixabayApiKey').'\''.
-<<< EOT
-;
+    var pixabayImages       = $(\'pixabay_images\');
+    var pixabayPagination   = $(\'pixabay_pagination\');
+    var pixabayPage         = 1;
+    var pixabayPages        = 1;
+    var resultsPerPage      = \''.(floor(Config::get('resultsPerPage') / 4) * 4).'\';
+    var language            = \''.$GLOBALS['TL_LANGUAGE'].'\';
+    var strHtmlEmpty        = \'<div class="widget"><p>'.$GLOBALS['TL_LANG']['MSC']['noResult'].'</a></div>\';
+    var strHtmlGoToPage     = \''.sprintf(\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['goToPage']), '##PAGE##').'\';
+    var strHtmlUser         = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['user'].'\';
+    var strHtmlViews        = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['views'].'\';
+    var strHtmlLikes        = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['likes'].'\';
+    var strHtmlFavorites    = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['favorites'].'\';
+    var strHtmlDownloads    = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['downloads'].'\';
+    var strHtmlTags         = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['tags'].'\';
+    var strHtmlCachedResult = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['cachedResult'].'\';
+    var blnAuoSearch        = \''.($blnPixabayCache ? 'true' : 'false').'\';
 
-    var resultsPerPage =
-EOT
-.' '.floor(Config::get('resultsPerPage') / 4) * 4 .
-<<< EOT
-;
-    var language =
-EOT
-.' \''.$GLOBALS['TL_LANGUAGE'].'\''.
-<<< EOT
-;
-
-    var strHtmlEmpty =
-EOT
-.' \'<div class="widget"><p>'.$GLOBALS['TL_LANG']['MSC']['noResult'].'</a></div>\''.
-<<< EOT
-;
-    var strHtmlGoToPage =
-EOT
-.' \''.sprintf(\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['goToPage']), '##PAGE##').'\''.
-<<< EOT
-;
-    var strHtmlUser =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['user'].'\''.
-<<< EOT
-;
-    var strHtmlViews =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['views'].'\''.
-<<< EOT
-;
-    var strHtmlLikes =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['likes'].'\''.
-<<< EOT
-;
-    var strHtmlFavorites =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['favorites'].'\''.
-<<< EOT
-;
-    var strHtmlDownloads =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['downloads'].'\''.
-<<< EOT
-;
-    var strHtmlTags =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['tags'].'\''.
-<<< EOT
-;
-    var strHtmlType =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['type'].'\''.
-<<< EOT
-;
-    var strHtmlCachedResult =
-EOT
-.' \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['cachedResult'].'\''.
-<<< EOT
-;
-    var blnAuoSearch =
-EOT
-.' '.($blnPixabayCache ? 'true' : 'false').
-<<< EOT
-;
-
-    
     function pixabayGoToPage(page)
     {
         return strHtmlGoToPage.replace("##PAGE##", page);
@@ -250,23 +185,25 @@ EOT
         if (lastLink > pixabayPages) lastLink = pixabayPages;
 
         // html: open pagination container
-        strHtmlPagination = '<div class="pagination">'
-            + '<p>Seite ' + pixabayPage + ' von ' + pixabayPages + '</p>'
-            + '<ul>'
+        strHtmlPagination = \'<div class="pagination">\'
+            + \'<p>Seite \' + pixabayPage + \' von \' + pixabayPages + \'</p>\'
+            + \'<ul>\'
             ;
 
         // html: previous
         if (pixabayPage > 1)
         {
-            strHtmlPagination += '<li class="first"><a href="#" onclick="return pixabaySearchUpdate(1);" class="first" title="' + pixabayGoToPage(1) + '">
-EOT
-. $GLOBALS['TL_LANG']['MSC']['first'] .
-<<< EOT
-            </a></li><li class="previous"><a href="#" onclick="return pixabaySearchUpdate(pixabayPage-1);" class="previous" title="' + pixabayGoToPage(pixabayPage-1) + '">
-EOT
-. $GLOBALS['TL_LANG']['MSC']['previous'] .
-<<< EOT
-            </a></li>';
+            strHtmlPagination += \'<li class="first">\'
+                + \'<a href="#" onclick="return pixabaySearchUpdate(1);" class="first" title="\' + pixabayGoToPage(1) + \'">\'
+                + \''.$GLOBALS['TL_LANG']['MSC']['first'].'\'
+                + \'</a>\'
+                + \'</li>\'
+                + \'<li class="previous">\'
+                + \'<a href="#" onclick="return pixabaySearchUpdate(pixabayPage-1);" class="previous" title="\' + pixabayGoToPage(pixabayPage-1) + \'">\'
+                + \''.$GLOBALS['TL_LANG']['MSC']['previous'].'\'
+                + \'</a>\'
+                + \'</li>\'
+                ;
         }
 
         // html: links
@@ -276,11 +213,11 @@ EOT
             {
                 if (i == pixabayPage)
                 {
-                    strHtmlPagination += '<li><span class="active">' + pixabayPage + '</span></li>'
+                    strHtmlPagination += \'<li><span class="active">\' + pixabayPage + \'</span></li>\'
                 }
                 else
                 {
-                    strHtmlPagination += '<li><a href="#" onclick="return pixabaySearchUpdate(' + i + ');" class="link" title="' + pixabayGoToPage(i) + '">' + i + '</a></li>'
+                    strHtmlPagination += \'<li><a href="#" onclick="return pixabaySearchUpdate(\' + i + \');" class="link" title="\' + pixabayGoToPage(i) + \'">\' + i + \'</a></li>\'
                 }
             }
         }
@@ -288,25 +225,26 @@ EOT
         // html: next
         if (pixabayPage < pixabayPages)
         {
-            strHtmlPagination += '<li class="next"><a href="#" onclick="return pixabaySearchUpdate(pixabayPage+1);" class="next" title="' + pixabayGoToPage(pixabayPage+1) + '">
-EOT
-. $GLOBALS['TL_LANG']['MSC']['next'] .
-<<< EOT
-            </a></li><li class="last"><a href="#" onclick="return pixabaySearchUpdate(' + pixabayPages + ');" class="last" title="' + pixabayGoToPage(pixabayPages) + '">
-EOT
-. $GLOBALS['TL_LANG']['MSC']['last'] .
-<<< EOT
-            </a></li>';
+            strHtmlPagination += \'<li class="next">\'
+                + \'<a href="#" onclick="return pixabaySearchUpdate(pixabayPage+1);" class="next" title="\' + pixabayGoToPage(pixabayPage+1) + \'">\'
+                + \''.$GLOBALS['TL_LANG']['MSC']['next'].'\'
+                + \'</a>\'
+                + \'</li>\'
+                + \'<li class="last">\'
+                + \'<a href="#" onclick="return pixabaySearchUpdate(\' + pixabayPages + \');" class="last" title="\' + pixabayGoToPage(pixabayPages) + \'">\'
+                + \''.$GLOBALS['TL_LANG']['MSC']['last'].'\'
+                + \'</a>\'
+                + \'</li>\'
+                ;
         }
 
         // html: close pagination container
-        strHtmlPagination += '</ul>'
-            + '</div>'
+        strHtmlPagination += \'</ul>\'
+            + \'</div>\'
             ;
 
         pixabayPagination.innerHTML = strHtmlPagination;
     }
-
 
     function pixabayImageList(pixabayJsonData)
     {
@@ -316,18 +254,15 @@ EOT
 
         if (pixabayJsonData.totalHits > 0)
         {
-            $$('div.tl_formbody_submit').removeClass('invisible');
+            //$$(\'div.tl_formbody_submit\').removeClass(\'invisible\');
 
-            strHtmlImages = ''
-                + '<input type="hidden" name="tl_pixabay_images" value="">'
-                + '<input type="hidden" name="tl_pixabay_imageIds" value="">'
-                + '<input type="hidden" name="tl_pixabay_cache" value="' + pixabayJsonData.__api__.cache + '">'
-                + '<div class="widget"><h3>' + pixabayJsonData.totalHits + '
-EOT
-. ' '.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'] .
-<<< EOT
-</h3>'
-                + '</div>'
+            strHtmlImages = \'\'
+                + \'<input type="hidden" name="tl_pixabay_images" value="">\'
+                + \'<input type="hidden" name="tl_pixabay_imageIds" value="">\'
+                + \'<input type="hidden" name="tl_pixabay_cache" value="\' + pixabayJsonData.__api__.cache + \'">\'
+                + \'<div class="widget">\'
+                + \'<h3>\' + pixabayJsonData.totalHits + \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'].'</h3>\'
+                + \'</div>\'
                 ;
 
             for (var key in pixabayJsonData.hits)
@@ -341,63 +276,57 @@ EOT
                     var pageURL       = value.pageURL;
                     var tags          = value.tags;
                     var previewURL    = value.previewURL;
-                    var downloadURL   = value.webformatURL;
                     var downloadId    = value.id;
     
-                    strHtmlImages += ''
-                        + '<div class="widget preview" id="pixabay_preview_' + key + '">'
-                            + '<label for="pixabay_image_' + key + '">'
-                            + '<div class="image-container">'
-                                + '<a href="contao/popup?src=' + pageURL +'" '
-                                    + ' title="' + tags + '" '
-                                    + ' onclick="Backend.openModalIframe({title:\'' + tags +'\', url:\'' + pageURL +'\'});return false" '
-                                + '>'
-                                    + '<img src="' + previewURL +'" width="' + previewWidth + '" height="' + previewHeight +'">'
-                                + '<\/a>'
-                            + '<\/div>'
-                            + '<br>'
-                                //+ '<input type="checkbox" id="pixabay_image_' + key + '" value="' + downloadURL +'" name="tl_pixabay_images[]" '
-                                //    + ' onclick="$$(\'#pixabay_preview_' + key + '\').toggleClass(\'selected\')" '
-                                //+ '>'
-                                + '<input type="checkbox" id="pixabay_image_' + key + '" value="' + downloadId +'" name="tl_pixabay_imageIds[]" '
-                                    + ' onclick="$$(\'#pixabay_preview_' + key + '\').toggleClass(\'selected\')" '
-                                + '>'
-                                + 'ID: <strong>' + value.id + '</strong>'
-                            + '<table class="tl_show">'
-                                + '<tbody>'
-                                    + '<tr>'
-                                        + '<td class="tl_bg"><span class="tl_label">' + strHtmlUser + ': </span></td>'
-                                        + '<td class="tl_bg">' + value.user + '</td>'
-                                    + '</tr>'
-                                    + '<tr>'
-                                        + '<td><span class="tl_label">' + strHtmlViews + ': </span></td>'
-                                        + '<td>' + value.views + '</td>'
-                                    + '</tr>'
-                                    + '<tr>'
-                                        + '<td class="tl_bg"><span class="tl_label">' + strHtmlLikes + ': </span></td>'
-                                        + '<td class="tl_bg">' + value.likes + '</td>'
-                                    + '</tr>'
-                                    + '<tr>'
-                                        + '<td><span class="tl_label">' + strHtmlFavorites + ': </span></td>'
-                                        + '<td>' + value.favorites + '</td>'
-                                    + '</tr>'
-                                    + '<tr>'
-                                        + '<td class="tl_bg"><span class="tl_label">' + strHtmlDownloads + ': </span></td>'
-                                        + '<td class="tl_bg">' + value.downloads + '</td>'
-                                    + '</tr>'
-                                    + '<tr>'
-                                        + '<td><span class="tl_label">' + strHtmlTags + ': </span></td>'
-                                        + '<td>' + value.tags + '</td>'
-                                    + '</tr>'
-                                + '</tbody>'
-                            + '</table>'
-                            + '<\/label>'
-                        + '<\/div>'
+                    strHtmlImages += \'\'
+                        + \'<div class="widget preview" id="pixabay_preview_\' + key + \'">\'
+                            + \'<label for="pixabay_image_\' + key + \'">\'
+                            + \'<div class="image-container">\'
+                                + \'<a href="contao/popup?src=\' + pageURL + \'" \'
+                                    + \' title="\' + tags + \'" \'
+                                    + \' onclick="Backend.openModalIframe({title:\\\'\' + tags + \'\\\', url:\\\'\' + pageURL + \'\\\'});return false" \'
+                                + \'>\'
+                                    + \'<img src="\' + previewURL + \'" width="\' + previewWidth + \'" height="\' + previewHeight + \'">\'
+                                + \'</a>\'
+                            + \'</div>\'
+                            + \'<br>\'
+                            + \'<input type="checkbox" id="pixabay_image_\' + key + \'" value="\' + downloadId + \'" name="tl_pixabay_imageIds[]" onclick="$$(\\\'#pixabay_preview_\' + key + \'\\\').toggleClass(\\\'selected\\\')">\'
+                                + \'ID: <strong>\' + value.id + \'</strong>\'
+                            + \'<table class="tl_show">\'
+                                + \'<tbody>\'
+                                    + \'<tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlUser + \': </span></td>\'
+                                        + \'<td class="tl_bg">\' + value.user + \'</td>\'
+                                    + \'</tr>\'
+                                    + \'<tr>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlViews + \': </span></td>\'
+                                        + \'<td>\' + value.views + \'</td>\'
+                                    + \'</tr>\'
+                                    + \'<tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlLikes + \': </span></td>\'
+                                        + \'<td class="tl_bg">\' + value.likes + \'</td>\'
+                                    + \'</tr>\'
+                                    + \'<tr>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlFavorites + \': </span></td>\'
+                                        + \'<td>\' + value.favorites + \'</td>\'
+                                    + \'</tr>\'
+                                    + \'<tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlDownloads + \': </span></td>\'
+                                        + \'<td class="tl_bg">\' + value.downloads + \'</td>\'
+                                    + \'</tr>\'
+                                    + \'<tr>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlTags + \': </span></td>\'
+                                        + \'<td>\' + value.tags + \'</td>\'
+                                    + \'</tr>\'
+                                + \'</tbody>\'
+                            + \'</table>\'
+                            + \'</label>\'
+                        + \'</div>\'
                         ;
                 }
             }
 
-            strHtmlImages += (pixabayJsonData.__api__.cachedResult ? '<br clear="all"><div class="widget"><p class="tl_help tl_tip">' + strHtmlCachedResult + '</p></div>' : '');
+            strHtmlImages += (pixabayJsonData.__api__.cachedResult ? \'<br clear="all"><div class="widget"><p class="tl_help tl_tip">\' + strHtmlCachedResult + \'</p></div>\' : \'\');
 
             pixabayImages.innerHTML = strHtmlImages;
             pixabayImagePagination(pixabayJsonData.totalHits);
@@ -406,43 +335,37 @@ EOT
 
     function pixabayApi(search)
     {
-        $$('div.tl_formbody_submit').addClass('invisible');
+        //$$(\'div.tl_formbody_submit\').addClass(\'invisible\');
         
-        pixabayPagination.innerHTML = '&nbsp;';
-        pixabayImages.innerHTML = '<div class="spinner"></div>';
+        pixabayPagination.innerHTML = \'&nbsp;\';
+        pixabayImages.innerHTML = \'<div class="spinner"></div>\';
 
         var xhr = new XMLHttpRequest();
 
-        var url ='trilobit/pixabay'
-            + '?' + ($$('input[name="pixabay_id_search"]:checked').length ? 'id' : 'q') + '=' + encodeURIComponent(search)
-            + '&lang=' + language
-            //+ '&editors_choice=' + $$('input[name="editors_choice"]:checked').length
-            //+ '&safesearch='     + $$('input[name="safesearch"]:checked').length
-            //+ '&orientation='    + $$('select[name="orientation"] option:selected').get('value')
-            //+ '&order='          + $$('select[name="order"] option:selected').get('value')
-            //+ '&image_type='     + $$('select[name="image_type"] option:selected').get('value')
-            //+ '&category='       + $$('select[name="category"] option:selected').get('value')
-            //+ '&page='           + pixabayPage
-            //+ '&per_page='       + resultsPerPage
-        ;
+        var url =\'trilobit/pixabay\'
+            + \'?\' + ($$(\'input[name="pixabay_id_search"]:checked\').length ? \'id\' : \'q\') + \'=\' + encodeURIComponent(search)
+            + \'&lang=\' + language
+            ;
         
-        if (!$$('input[name="pixabay_id_search"]:checked').length)
+        if (!$$(\'input[name="pixabay_id_search"]:checked\').length)
         {
-            url += '&editors_choice=' + $$('input[name="editors_choice"]:checked').length
-                + '&safesearch='     + $$('input[name="safesearch"]:checked').length
-                + '&orientation='    + $$('select[name="orientation"] option:selected').get('value')
-                + '&order='          + $$('select[name="order"] option:selected').get('value')
-                + '&image_type='     + $$('select[name="image_type"] option:selected').get('value')
-                + '&category='       + $$('select[name="category"] option:selected').get('value')
-                + '&page='           + pixabayPage
-                + '&per_page='       + resultsPerPage
-            ;       
+            url += \'&editors_choice=\' + $$(\'input[name="editors_choice"]:checked\').length
+                + \'&safesearch=\'     + $$(\'input[name="safesearch"]:checked\').length
+                + \'&orientation=\'    + $$(\'select[name="orientation"] option:selected\').get(\'value\')
+                + \'&order=\'          + $$(\'select[name="order"] option:selected\').get(\'value\')
+                + \'&image_type=\'     + $$(\'select[name="image_type"] option:selected\').get(\'value\')
+                + \'&category=\'       + $$(\'select[name="category"] option:selected\').get(\'value\')
+                + \'&page=\'           + pixabayPage
+                + \'&per_page=\'       + resultsPerPage
+                ;       
         }
         
-        xhr.open('GET', url);
+        xhr.open(\'GET\', url);
         xhr.onreadystatechange = function()
         {
-            if (this.status == 200 && this.readyState == 4)
+            if (   this.status == 200
+                && this.readyState == 4
+            )
             {
                 pixabayImageList(JSON.parse(this.responseText));
             }
@@ -459,16 +382,16 @@ EOT
             pixabayPage = page;
         }
 
-        var search = $$('input[name="pixabay_search"]').get('value');
+        var search = $$(\'input[name="pixabay_search"]\').get(\'value\');
 
-        $$('#pal_pixabay_result_legend').removeClass('collapsed');
-        $$('#pal_pixabay_filter_legend').addClass('collapsed');
+        $$(\'#pal_pixabay_result_legend\').removeClass(\'collapsed\');
+        $$(\'#pal_pixabay_filter_legend\').addClass(\'collapsed\');
 
         if (   search === undefined
-            || search === ''
+            || search === \'\'
         )
         {
-            pixabayImages.innerHTML = '';
+            pixabayImages.innerHTML = \'\';
             pixabayImages.innerHTML = strHtmlEmpty;
 
             return false;
@@ -481,8 +404,7 @@ EOT
 
     function pixabaySearch()
     {
-        $$('#pixabay_form button.tl_submit').addEvent('click', function(e) {
-            
+        $$(\'#pixabay_form button.tl_submit\').addEvent(\'click\', function(e) {
             e.stop();
 
             return pixabaySearchUpdate();            
@@ -491,15 +413,9 @@ EOT
 
     pixabaySearch();
     
-    if (blnAuoSearch) pixabaySearchUpdate(
-EOT
-. $GLOBALS['TL_CONFIG']['page'] .
-<<< EOT
-    );
-</script>
-
-EOT;
-
+    if (blnAuoSearch) pixabaySearchUpdate('.$GLOBALS['TL_CONFIG']['page'].');
+</script>';
+        
         $GLOBALS['TL_CONFIG'] = $arrGlobalsConfig;
 
         return $return;

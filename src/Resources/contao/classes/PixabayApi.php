@@ -14,6 +14,7 @@ use Config;
 use StringUtil;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Response;
+use System;
 use Trilobit\PixabayBundle\Helper;
 
 
@@ -110,7 +111,7 @@ class PixabayApi
 
 
         // prepare cache controll
-        $strCachePath = StringUtil::stripRootDir(\System::getContainer()->getParameter('kernel.cache_dir'));
+        $strCachePath = StringUtil::stripRootDir(System::getContainer()->getParameter('kernel.cache_dir'));
 
         $arrResult = null;
         $strChecksum = md5(implode($arrApiParameter));
@@ -142,7 +143,7 @@ class PixabayApi
             }
             catch (\Exception $e)
             {
-                $this->log('Pixabay search failed: ' . $e->getMessage(), __METHOD__, TL_ERROR);
+                System::log('Pixabay search failed: ' . $e->getMessage(), __METHOD__, TL_ERROR);
                 $arrResult = array();
             }
 

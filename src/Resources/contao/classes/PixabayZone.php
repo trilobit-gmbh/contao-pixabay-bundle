@@ -137,7 +137,7 @@ class PixabayZone extends FileUpload
     var pixabayPages        = 1;
     var resultsPerPage      = \''.(floor(Config::get('resultsPerPage') / 4) * 4).'\';
     var language            = \''.$GLOBALS['TL_LANGUAGE'].'\';
-    var strHtmlEmpty        = \'<div class="widget"><p>'.$GLOBALS['TL_LANG']['MSC']['noResult'].'</a></div>\';
+    var strHtmlEmpty        = \'<div class="widget"><p>'.\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['noResult']).'<\/p><\/div>\';
     var strHtmlGoToPage     = \''.sprintf(\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['goToPage']), '##PAGE##').'\';
     var strHtmlUser         = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['user'].'\';
     var strHtmlViews        = \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['views'].'\';
@@ -186,7 +186,7 @@ class PixabayZone extends FileUpload
 
         // html: open pagination container
         strHtmlPagination = \'<div class="pagination">\'
-            + \'<p>Seite \' + pixabayPage + \' von \' + pixabayPages + \'</p>\'
+            + \'<p>Seite \' + pixabayPage + \' von \' + pixabayPages + \'<\/p>\'
             + \'<ul>\'
             ;
 
@@ -195,14 +195,14 @@ class PixabayZone extends FileUpload
         {
             strHtmlPagination += \'<li class="first">\'
                 + \'<a href="#" onclick="return pixabaySearchUpdate(1);" class="first" title="\' + pixabayGoToPage(1) + \'">\'
-                + \''.$GLOBALS['TL_LANG']['MSC']['first'].'\'
-                + \'</a>\'
-                + \'</li>\'
+                + \''.\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['first']).'\'
+                + \'<\/a>\'
+                + \'<\/li>\'
                 + \'<li class="previous">\'
                 + \'<a href="#" onclick="return pixabaySearchUpdate(pixabayPage-1);" class="previous" title="\' + pixabayGoToPage(pixabayPage-1) + \'">\'
-                + \''.$GLOBALS['TL_LANG']['MSC']['previous'].'\'
-                + \'</a>\'
-                + \'</li>\'
+                + \''.\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['previous']).'\'
+                + \'<\/a>\'
+                + \'<\/li>\'
                 ;
         }
 
@@ -213,11 +213,11 @@ class PixabayZone extends FileUpload
             {
                 if (i == pixabayPage)
                 {
-                    strHtmlPagination += \'<li><span class="active">\' + pixabayPage + \'</span></li>\'
+                    strHtmlPagination += \'<li><span class="active">\' + pixabayPage + \'<\/span><\/li>\'
                 }
                 else
                 {
-                    strHtmlPagination += \'<li><a href="#" onclick="return pixabaySearchUpdate(\' + i + \');" class="link" title="\' + pixabayGoToPage(i) + \'">\' + i + \'</a></li>\'
+                    strHtmlPagination += \'<li><a href="#" onclick="return pixabaySearchUpdate(\' + i + \');" class="link" title="\' + pixabayGoToPage(i) + \'">\' + i + \'<\/a><\/li>\'
                 }
             }
         }
@@ -227,20 +227,20 @@ class PixabayZone extends FileUpload
         {
             strHtmlPagination += \'<li class="next">\'
                 + \'<a href="#" onclick="return pixabaySearchUpdate(pixabayPage+1);" class="next" title="\' + pixabayGoToPage(pixabayPage+1) + \'">\'
-                + \''.$GLOBALS['TL_LANG']['MSC']['next'].'\'
-                + \'</a>\'
-                + \'</li>\'
+                + \''.\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['next']).'\'
+                + \'<\/a>\'
+                + \'<\/li>\'
                 + \'<li class="last">\'
                 + \'<a href="#" onclick="return pixabaySearchUpdate(\' + pixabayPages + \');" class="last" title="\' + pixabayGoToPage(pixabayPages) + \'">\'
-                + \''.$GLOBALS['TL_LANG']['MSC']['last'].'\'
-                + \'</a>\'
-                + \'</li>\'
+                + \''.\StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['last']).'\'
+                + \'<\/a>\'
+                + \'<\/li>\'
                 ;
         }
 
         // html: close pagination container
-        strHtmlPagination += \'</ul>\'
-            + \'</div>\'
+        strHtmlPagination += \'<\/ul>\'
+            + \'<\/div>\'
             ;
 
         pixabayPagination.innerHTML = strHtmlPagination;
@@ -261,8 +261,8 @@ class PixabayZone extends FileUpload
                 + \'<input type="hidden" name="tl_pixabay_imageIds" value="">\'
                 + \'<input type="hidden" name="tl_pixabay_cache" value="\' + pixabayJsonData.__api__.cache + \'">\'
                 + \'<div class="widget">\'
-                + \'<h3>\' + pixabayJsonData.totalHits + \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'].'</h3>\'
-                + \'</div>\'
+                + \'<h3>\' + pixabayJsonData.totalHits + \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'].'<\/h3>\'
+                + \'<\/div>\'
                 ;
 
             for (var key in pixabayJsonData.hits)
@@ -287,46 +287,46 @@ class PixabayZone extends FileUpload
                                     + \' onclick="Backend.openModalIframe({title:\\\'\' + tags + \'\\\', url:\\\'\' + pageURL + \'\\\'});return false" \'
                                 + \'>\'
                                     + \'<img src="\' + previewURL + \'" width="\' + previewWidth + \'" height="\' + previewHeight + \'">\'
-                                + \'</a>\'
-                            + \'</div>\'
+                                + \'<\/a>\'
+                            + \'<\/div>\'
                             + \'<br>\'
                             + \'<input type="checkbox" id="pixabay_image_\' + key + \'" value="\' + downloadId + \'" name="tl_pixabay_imageIds[]" onclick="$$(\\\'#pixabay_preview_\' + key + \'\\\').toggleClass(\\\'selected\\\')">\'
-                                + \'ID: <strong>\' + value.id + \'</strong>\'
+                                + \'ID: <strong>\' + value.id + \'<\/strong>\'
                             + \'<table class="tl_show">\'
                                 + \'<tbody>\'
                                     + \'<tr>\'
-                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlUser + \': </span></td>\'
-                                        + \'<td class="tl_bg">\' + value.user + \'</td>\'
-                                    + \'</tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlUser + \': <\/span><\/td>\'
+                                        + \'<td class="tl_bg">\' + value.user + \'<\/td>\'
+                                    + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td><span class="tl_label">\' + strHtmlViews + \': </span></td>\'
-                                        + \'<td>\' + value.views + \'</td>\'
-                                    + \'</tr>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlViews + \': <\/span><\/td>\'
+                                        + \'<td>\' + value.views + \'<\/td>\'
+                                    + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlLikes + \': </span></td>\'
-                                        + \'<td class="tl_bg">\' + value.likes + \'</td>\'
-                                    + \'</tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlLikes + \': <\/span><\/td>\'
+                                        + \'<td class="tl_bg">\' + value.likes + \'<\/td>\'
+                                    + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td><span class="tl_label">\' + strHtmlFavorites + \': </span></td>\'
-                                        + \'<td>\' + value.favorites + \'</td>\'
-                                    + \'</tr>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlFavorites + \': <\/span><\/td>\'
+                                        + \'<td>\' + value.favorites + \'<\/td>\'
+                                    + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlDownloads + \': </span></td>\'
-                                        + \'<td class="tl_bg">\' + value.downloads + \'</td>\'
-                                    + \'</tr>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlDownloads + \': <\/span><\/td>\'
+                                        + \'<td class="tl_bg">\' + value.downloads + \'<\/td>\'
+                                    + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td><span class="tl_label">\' + strHtmlTags + \': </span></td>\'
-                                        + \'<td>\' + value.tags + \'</td>\'
-                                    + \'</tr>\'
-                                + \'</tbody>\'
-                            + \'</table>\'
-                            + \'</label>\'
-                        + \'</div>\'
+                                        + \'<td><span class="tl_label">\' + strHtmlTags + \': <\/span><\/td>\'
+                                        + \'<td>\' + value.tags + \'<\/td>\'
+                                    + \'<\/tr>\'
+                                + \'<\/tbody>\'
+                            + \'<\/table>\'
+                            + \'<\/label>\'
+                        + \'<\/div>\'
                         ;
                 }
             }
 
-            strHtmlImages += (pixabayJsonData.__api__.cachedResult ? \'<br clear="all"><div class="widget"><p class="tl_help tl_tip">\' + strHtmlCachedResult + \'</p></div>\' : \'\');
+            strHtmlImages += (pixabayJsonData.__api__.cachedResult ? \'<br clear="all"><div class="widget"><p class="tl_help tl_tip">\' + strHtmlCachedResult + \'<\/p><\/div>\' : \'\');
 
             pixabayImages.innerHTML = strHtmlImages;
             pixabayImagePagination(pixabayJsonData.totalHits);
@@ -338,7 +338,7 @@ class PixabayZone extends FileUpload
         //$$(\'div.tl_formbody_submit\').addClass(\'invisible\');
         
         pixabayPagination.innerHTML = \'&nbsp;\';
-        pixabayImages.innerHTML = \'<div class="spinner"></div>\';
+        pixabayImages.innerHTML = \'<div class="spinner"><\/div>\';
 
         var xhr = new XMLHttpRequest();
 

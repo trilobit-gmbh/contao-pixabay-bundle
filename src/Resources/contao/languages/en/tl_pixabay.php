@@ -115,5 +115,5 @@ $GLOBALS['TL_LANG']['tl_pixabay']['options']['orientation']['vertical']    = 've
 
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['webformatURL']  = '640 pixels wide [webformatURL]';
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['largeImageURL'] = '1280 pixels wide [largeImageURL]';
-$GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['fullHDURL']     = '1280 pixels wide [fullHDURL]';
+$GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['fullHDURL']     = '1920 pixels wide [fullHDURL]';
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['imageURL']      = 'original [imageURL]';

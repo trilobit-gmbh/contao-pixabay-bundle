@@ -271,11 +271,11 @@ class PixabayZone extends FileUpload
                 {
                     var value = pixabayJsonData.hits[key];
 
-                    var previewWidth  = value.previewWidth;
-                    var previewHeight = value.previewHeight;
+                    var previewWidth  = value.webformatWidth;
+                    var previewHeight = value.webformatHeight;
                     var pageURL       = value.pageURL;
                     var tags          = value.tags;
-                    var previewURL    = value.previewURL;
+                    var previewURL    = value.webformatURL;
                     var downloadId    = value.id;
     
                     strHtmlImages += \'\'
@@ -295,8 +295,8 @@ class PixabayZone extends FileUpload
                             + \'<table class="tl_show">\'
                                 + \'<tbody>\'
                                     + \'<tr>\'
-                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlUser + \': <\/span><\/td>\'
-                                        + \'<td class="tl_bg">\' + value.user + \'<\/td>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlDownloads + \': <\/span><\/td>\'
+                                        + \'<td class="tl_bg">\' + value.downloads + \'<\/td>\'
                                     + \'<\/tr>\'
                                     + \'<tr>\'
                                         + \'<td><span class="tl_label">\' + strHtmlViews + \': <\/span><\/td>\'
@@ -311,8 +311,8 @@ class PixabayZone extends FileUpload
                                         + \'<td>\' + value.favorites + \'<\/td>\'
                                     + \'<\/tr>\'
                                     + \'<tr>\'
-                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlDownloads + \': <\/span><\/td>\'
-                                        + \'<td class="tl_bg">\' + value.downloads + \'<\/td>\'
+                                        + \'<td class="tl_bg"><span class="tl_label">\' + strHtmlUser + \': <\/span><\/td>\'
+                                        + \'<td class="tl_bg">\' + value.user + \'<\/td>\'
                                     + \'<\/tr>\'
                                     + \'<tr>\'
                                         + \'<td><span class="tl_label">\' + strHtmlTags + \': <\/span><\/td>\'

@@ -57,7 +57,7 @@ $GLOBALS['TL_DCA']['tl_pixabay'] = array
             'inputType'        => 'select',
             'options_callback' => array('tl_pixabay', 'getOrder'),
             'reference'        => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['order'],
-            'eval'             => array('chosen'=>true, 'includeBlankOption'=>true, 'tl_class'=>'w50'),
+            'eval'             => array('chosen'=>true, 'tl_class'=>'w50'),
             'sql'              => "varchar(255) NOT NULL default ''"
         ),
         'priority' => array

@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -43,7 +44,7 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayImageSource'] = array
     'inputType'        => 'select',
     'options_callback' => array('tl_settings_pixabay', 'getImageSource'),
     'reference'        => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source'],
-    'eval'             => array('chosen'=>true, 'includeBlankOption'=>true, 'tl_class'=>'clr w50'),
+    'eval'             => array('chosen'=>true, 'tl_class'=>'clr w50'),
 );
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayApiUrl'] = array

@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 /**
  * Plugin for the Contao Manager.
  *
- * @author trilobit GmbH <https://github.com/trilobitgmbh>
+ * @author trilobit GmbH <https://github.com/trilobit-gmbh>
  */
 class Plugin implements BundlePluginInterface, RoutingPluginInterface
 {

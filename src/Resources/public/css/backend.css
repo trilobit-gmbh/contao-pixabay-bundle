@@ -21,10 +21,8 @@
 .w25 {
     width: calc(25% - 30px);
     float: left;
-    height: 80px;
 }
 .w25.cbx {
-    height: 34px;
 }
 
 #pixabay_images .preview {

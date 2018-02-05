@@ -333,6 +333,20 @@ class PixabayZone extends FileUpload
         }
     }
 
+    function pixabayException(pixabayJsonData)
+    {
+        pixabayImages.innerHTML = \'<br clear="all">\'
+            + \'<div class="widget tl_error">\'
+                + \'<p>\'
+                    + \'<strong>#\' + pixabayJsonData.__api__.exceptionId + \'</strong>\'
+                + \'<\/p>\'
+                + \'<p>\'
+                    + pixabayJsonData.__api__.exceptionMessage
+                + \'<\/p>\'
+            + \'<\/div>\'
+            ;
+    }
+
     function pixabayApi(search)
     {
         //$$(\'div.tl_formbody_submit\').addClass(\'invisible\');
@@ -367,8 +381,31 @@ class PixabayZone extends FileUpload
                 && this.readyState == 4
             )
             {
-                pixabayImageList(JSON.parse(this.responseText));
+                var pixabayJsonData = JSON.parse(this.responseText);
+
+                if (   pixabayJsonData
+                    && pixabayJsonData.__api__
+                    && pixabayJsonData.__api__.exceptionId
+                )
+                {
+                    pixabayException(pixabayJsonData);
+                }
+                else
+                {
+                    pixabayImageList(pixabayJsonData);
+                }
+
+                return false;
             }
+
+            var pixabayJsonData = pixabayJsonData || {};
+                pixabayJsonData.__api__ = pixabayJsonData.__api__ || {};;
+
+                pixabayJsonData.__api__.exceptionId = this.status;
+                pixabayJsonData.__api__.exceptionMessage = \'[ERROR \' + this.status + \'] Please try again...\';
+
+            pixabayException(pixabayJsonData);
+
         };
         xhr.send();
 

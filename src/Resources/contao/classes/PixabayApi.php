@@ -140,22 +140,25 @@ class PixabayApi
             try
             {
                 $arrResult = json_decode(self::apiCall($strApiUrl, $strApiKey, $arrApiParameter), true);
+
+                $arrResult['__api__']['url']       = $strApiUrl;
+                $arrResult['__api__']['key']       = $strApiKey;
+                $arrResult['__api__']['parameter'] = $arrApiParameter;
+                $arrResult['__api__']['cache']     = $strChecksum;
+                $arrResult['__api__']['tstamp']    = time();
+
+                \File::putContent($strCacheFile, json_encode($arrResult));
+
+                $arrResult['__api__']['cachedResult'] = false;
             }
             catch (\Exception $e)
             {
                 System::log('Pixabay search failed: ' . $e->getMessage(), __METHOD__, TL_ERROR);
                 $arrResult = array();
+
+                $arrResult['__api__']['exceptionId']      = explode('|', $e->getMessage())[0];
+                $arrResult['__api__']['exceptionMessage'] = explode('|', $e->getMessage())[1];
             }
-
-            $arrResult['__api__']['url']       = $strApiUrl;
-            $arrResult['__api__']['key']       = $strApiKey;
-            $arrResult['__api__']['parameter'] = $arrApiParameter;
-            $arrResult['__api__']['cache']     = $strChecksum;
-            $arrResult['__api__']['tstamp']    = time();
-
-            \File::putContent($strCacheFile, json_encode($arrResult));
-
-            $arrResult['__api__']['cachedResult'] = false;
         }
 
         // Response
@@ -200,7 +203,8 @@ class PixabayApi
 
         if ($returnCode !== 200)
         {
-            throw new Exception($returnCode);
+            throw new Exception($returnCode . '|' . $returnValue);
+
             /*
             $returnValue = array();
             $returnValue['__api__']['request'] = $strUrl;

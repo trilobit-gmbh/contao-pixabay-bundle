@@ -15,6 +15,12 @@ System::loadLanguageFile('tl_pixabay');
 /**
  * Table tl_files
  */
+if (!in_array('trilobit_dcfolder', $this->Config->getActiveModules()))
+{
+    $this->log('Pixabay init failed: "trilobit-gmbh/contao-dcfolder" is required.', 'tl_files', TL_ERROR);
+    return false;
+}
+
 if (\Config::get('pixabayApiKey') !== '')
 {
     $GLOBALS['TL_DCA']['tl_files']['list']['global_operations'] = array_merge(

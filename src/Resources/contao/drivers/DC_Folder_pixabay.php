@@ -79,8 +79,7 @@ class DC_Folder_pixabay extends \DC_Folder
                 $arrApiDataHighResolution = array();
 
                 $blnHighResolution = Config::get('pixabayHighResolution');
-                $strImageSource    = (Config::get('pixabayImageSource')    !== '' ? Config::get('pixabayImageSource') : 'largeImageURL');
-
+                $strImageSource    = (empty(Config::get('pixabayImageSource')) ? 'largeImageURL' : Config::get('pixabayImageSource'));
 
                 if (   $blnHighResolution
                     && isset($arrApiData['__api__']['parameter']['q'])

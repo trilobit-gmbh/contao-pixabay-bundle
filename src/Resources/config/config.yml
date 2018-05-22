@@ -8,8 +8,9 @@ trilobit:
             image_type:
             orientation:
             category:
-#            min_width: int
-#            min_height: int
+            colors:
+            min_width: int
+            min_height: int
             editors_choice: bool
             safesearch: bool
             order:
@@ -58,3 +59,19 @@ trilobit:
             fullHDURL:
             imageURL:
             webformatURL:
+
+        colors:
+            transparent:
+            grayscale:
+            red:
+            orange:
+            yellow:
+            green:
+            turquoise:
+            blue:
+            lilac:
+            pink:
+            white:
+            gray:
+            black:
+            brown:

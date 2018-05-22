@@ -3,17 +3,21 @@
 /**
  * Contao Open Source CMS
  *
- * Copyright (c) 2005-2017 Leo Feyer
+ * Copyright (C) 2005-2014 Leo Feyer
  *
- * @license LGPL-3.0+
+ * @package     Trilobit
+ * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license     LGPL-3.0-or-later
+ * @copyright   trilobit GmbH
  */
 
 namespace Trilobit\PixabayBundle;
 
-use Config;
+use Contao\Config;
 use Contao\FileUpload;
+use Contao\Controller;
+use Contao\Input;
 use Trilobit\PixabayBundle\Helper;
-
 
 /**
  * Class PixabayZone
@@ -26,12 +30,13 @@ class PixabayZone extends FileUpload
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function generateMarkup()
     {
-        \Controller::loadLanguageFile('tl_pixabay');
+        Controller::loadLanguageFile('tl_pixabay');
 
-        $arrCache        = Helper::getCacheData(\Input::get('cache'));
+        $arrCache        = Helper::getCacheData(Input::get('cache'));
         $arrApiParameter = Helper::getConfigData()['api'];
 
         $arrGlobalsConfig = $GLOBALS['TL_CONFIG'];
@@ -103,7 +108,7 @@ class PixabayZone extends FileUpload
             <p class="tl_help tl_tip">'.$GLOBALS['TL_LANG']['tl_pixabay']['searchPixabay'][1].'</p>
         </div>
       
-        <div class="w50 widget cbx">
+        <!---<div class="w50 widget cbx">
             <div id="ctrl_pixabay_id_search" class="tl_checkbox_single_container">
                 <input type="hidden" name="pixabay_id_search" value="">
                 <input type="checkbox" name="pixabay_id_search" id="opt_pixabay_id_search_0" class="tl_checkbox" value="1" onclick="($$(\'#opt_pixabay_id_search_0:checked\').length ? $$(\'#pal_pixabay_filter_legend\').addClass(\'invisible\') : $$(\'#pal_pixabay_filter_legend\').removeClass(\'invisible\'))" onfocus="Backend.getScrollOffset()">
@@ -111,7 +116,7 @@ class PixabayZone extends FileUpload
             </div>
 
             <p class="tl_help tl_tip" title="">'.$GLOBALS['TL_LANG']['tl_pixabay']['searchId'][1].'</p>
-        </div>
+        </div>--->
     </fieldset>
 
     '.Helper::generateFilterPalette().'
@@ -330,6 +335,8 @@ class PixabayZone extends FileUpload
 
             pixabayImages.innerHTML = strHtmlImages;
             pixabayImagePagination(pixabayJsonData.totalHits);
+
+            new Fx.Scroll(window).toElement(\'pal_pixabay_result_legend\');
         }
     }
 
@@ -369,6 +376,10 @@ class PixabayZone extends FileUpload
                 + \'&order=\'          + $$(\'select[name="order"] option:selected\').get(\'value\')
                 + \'&image_type=\'     + $$(\'select[name="image_type"] option:selected\').get(\'value\')
                 + \'&category=\'       + $$(\'select[name="category"] option:selected\').get(\'value\')
+                + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
+                + \'&min_width=\'      + $$(\'input[name="min_width"]\').get(\'value\')
+                + \'&min_height=\'     + $$(\'input[name="min_height"]\').get(\'value\')
+                + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
                 + \'&page=\'           + pixabayPage
                 + \'&per_page=\'       + resultsPerPage
                 ;       
@@ -435,6 +446,7 @@ class PixabayZone extends FileUpload
         }
 
         pixabayApi(search);
+        
 
         return false;
     }
@@ -444,7 +456,7 @@ class PixabayZone extends FileUpload
         $$(\'#pixabay_form button.tl_submit\').addEvent(\'click\', function(e) {
             e.stop();
 
-            return pixabaySearchUpdate();            
+            return pixabaySearchUpdate(1);            
         });
     }
 

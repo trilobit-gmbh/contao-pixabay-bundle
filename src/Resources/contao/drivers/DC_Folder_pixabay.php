@@ -3,9 +3,12 @@
 /**
  * Contao Open Source CMS
  *
- * Copyright (c) 2005-2017 Leo Feyer
+ * Copyright (C) 2005-2014 Leo Feyer
  *
- * @license LGPL-3.0+
+ * @package     Trilobit
+ * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license     LGPL-3.0-or-later
+ * @copyright   trilobit GmbH
  */
 
 namespace Trilobit\PixabayBundle;
@@ -19,13 +22,15 @@ use Contao\CoreBundle\Util\SymlinkUtil;
 use Contao\Image\ResizeConfiguration;
 use Contao\StringUtil;
 use Contao\System;
-use Environment;
+use Contao\Dbafs;
+use Contao\Environment;
 use Imagine\Gd\Imagine;
+use Contao\Input;
+use Contao\Message;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Trilobit\PixabayBundle\PixabayZone;
-
 
 /**
  * Class DC_Folder_pixabay
@@ -45,7 +50,7 @@ class DC_Folder_pixabay extends \DC_Folder
      */
     public function pixabay($strMessage='', $strSource='', $blnIsAjax=false)
     {
-        $strFolder = \Input::get('pid', true);
+        $strFolder = Input::get('pid', true);
 
         if (!file_exists(TL_ROOT . '/' . $strFolder) || !$this->isMounted($strFolder))
         {
@@ -59,7 +64,7 @@ class DC_Folder_pixabay extends \DC_Folder
 
         // Empty clipboard
         /** @var SessionInterface $objSession */
-        $objSession = \System::getContainer()->get('session');
+        $objSession = System::getContainer()->get('session');
 
         $arrClipboard = $objSession->get('CLIPBOARD');
         $arrClipboard[$this->strTable] = array();
@@ -72,15 +77,16 @@ class DC_Folder_pixabay extends \DC_Folder
         if (\Input::post('FORM_SUBMIT') == 'tl_upload')
         {
             // Generate the DB entries
-            if ($this->blnIsDbAssisted && \Dbafs::shouldBeSynchronized($strFolder))
+            if ($this->blnIsDbAssisted && Dbafs::shouldBeSynchronized($strFolder))
             {
-                $arrApiData = Helper::getCacheData(\Input::post('tl_pixabay_cache'));
+                $arrApiData = Helper::getCacheData(Input::post('tl_pixabay_cache'));
 
                 $arrApiDataHighResolution = array();
 
                 $blnHighResolution = Config::get('pixabayHighResolution');
                 $strImageSource    = (empty(Config::get('pixabayImageSource')) ? 'largeImageURL' : Config::get('pixabayImageSource'));
 
+                /*
                 if (   $blnHighResolution
                     && isset($arrApiData['__api__']['parameter']['q'])
                 )
@@ -89,17 +95,18 @@ class DC_Folder_pixabay extends \DC_Folder
 
                     $arrApiDataHighResolution = PixabayApi::search(false, $arrApiData['__api__']['parameter']);
                 }
+                */
 
                 if (empty($arrApiData))
                 {
-                    \Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
+                    Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
                     $this->reload();
                 }
 
                 // prepare default result
                 foreach ($arrApiData['hits'] as $value)
                 {
-                    if (!in_array($value['id'], \Input::post('tl_pixabay_imageIds'))) continue;
+                    if (!in_array($value['id'], Input::post('tl_pixabay_imageIds'))) continue;
 
                     $arrPathParts    = pathinfo(urldecode($value['webformatURL']));
                     $strFileNameTmp  = $strFolder . '/' . $arrPathParts['basename'];
@@ -118,10 +125,19 @@ class DC_Folder_pixabay extends \DC_Folder
                         'values'       => $value,
                     );
 
+                    $arrApiData['id'][$value['id']]['files']['download'] = $value[$strImageSource];
+
+                    /*
+                    if ($blnHighResolution)
+                    {
+                        $arrApiData['id'][$value['id']]['files']['download'] = $value[$strImageSource];
+                    }
+                    */
+
                     // update with high resolution result
+                    /*
                     if ($blnHighResolution && count($arrApiDataHighResolution['hits']))
                     {
-
                         foreach ($arrApiDataHighResolution['hits'] as $valueHighResolution)
                         {
                             $arrHighResolution = pathinfo($valueHighResolution['webformatURL']);
@@ -138,12 +154,13 @@ class DC_Folder_pixabay extends \DC_Folder
                             }
                         }
                     }
+                    */
                 }
 
                 // Upload the files
                 $arrUploaded = array();
 
-                foreach (\Input::post('tl_pixabay_imageIds') as $value)
+                foreach (Input::post('tl_pixabay_imageIds') as $value)
                 {
                     $strFileTmp      = 'system/tmp/' . md5(uniqid(mt_rand(), true));
                     $strFileDownload = $arrApiData['id'][$value]['files']['download'];
@@ -165,7 +182,7 @@ class DC_Folder_pixabay extends \DC_Folder
                     {
                         $this->Files->chmod($strFileContao, Config::get('defaultFileChmod'));
 
-                        $objFile = \Dbafs::addResource($strFileContao);
+                        $objFile = Dbafs::addResource($strFileContao);
 
                         $objFile->meta = serialize(array(
                             $arrApiData['__api__']['parameter']['lang'] => array
@@ -182,7 +199,7 @@ class DC_Folder_pixabay extends \DC_Folder
                         $objFile->save();
 
                         // Notify the user
-                        \Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['MSC']['fileUploaded'], $strFileContao));
+                        Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['MSC']['fileUploaded'], $strFileContao));
 
                         System::log('File "' . $strFileContao . '" has been uploaded', __METHOD__, TL_FILES);
 
@@ -193,7 +210,7 @@ class DC_Folder_pixabay extends \DC_Folder
 
                 if (empty($arrUploaded) && !$objUploader->hasError())
                 {
-                    \Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
+                    Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
                     $this->reload();
                 }
 
@@ -222,9 +239,9 @@ class DC_Folder_pixabay extends \DC_Folder
             }
 
             // Update the hash of the target folder
-            if ($this->blnIsDbAssisted && \Dbafs::shouldBeSynchronized($strFolder))
+            if ($this->blnIsDbAssisted && Dbafs::shouldBeSynchronized($strFolder))
             {
-                \Dbafs::updateFolderHashes($strFolder);
+                Dbafs::updateFolderHashes($strFolder);
             }
 
             // Redirect or reload
@@ -240,7 +257,7 @@ class DC_Folder_pixabay extends \DC_Folder
                 // Do not purge the html folder (see #2898)
                 if (isset($_POST['uploadNback']) && !$objUploader->hasResized())
                 {
-                    \Message::reset();
+                    Message::reset();
                     $this->redirect($this->getReferer());
                 }
 

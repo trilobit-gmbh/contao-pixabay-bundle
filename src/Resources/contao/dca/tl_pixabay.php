@@ -3,9 +3,12 @@
 /**
  * Contao Open Source CMS
  *
- * Copyright (c) 2005-2017 Leo Feyer
+ * Copyright (C) 2005-2014 Leo Feyer
  *
- * @license LGPL-3.0+
+ * @package     Trilobit
+ * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license     LGPL-3.0-or-later
+ * @copyright   trilobit GmbH
  */
 
 // Load language file(s)
@@ -27,7 +30,7 @@ $GLOBALS['TL_DCA']['tl_pixabay'] = array
     // Palettes
     'palettes' => array
     (
-        'default' => '{pixabay_filter_legend},image_type,category,order,orientation,editors_choice,safesearch', //,min_width,min_height
+        'default' => '{pixabay_filter_legend},image_type,category,order,orientation,min_width,min_height,colors,editors_choice,safesearch', //,
     ),
 
     // Fields
@@ -75,6 +78,15 @@ $GLOBALS['TL_DCA']['tl_pixabay'] = array
             'inputType'        => 'select',
             'options_callback' => array('tl_pixabay', 'getOrientation'),
             'reference'        => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['orientation'],
+            'eval'             => array('chosen'=>true, 'tl_class'=>'w50'),
+            'sql'              => "varchar(255) NOT NULL default ''"
+        ),
+        'colors' => array
+        (
+            'label'            => &$GLOBALS['TL_LANG']['tl_pixabay']['colors'],
+            'inputType'        => 'select',
+            'options_callback' => array('tl_pixabay', 'getColors'),
+            'reference'        => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['colors'],
             'eval'             => array('chosen'=>true, 'includeBlankOption'=>true, 'tl_class'=>'w50'),
             'sql'              => "varchar(255) NOT NULL default ''"
         ),
@@ -82,7 +94,7 @@ $GLOBALS['TL_DCA']['tl_pixabay'] = array
         (
             'label'            => &$GLOBALS['TL_LANG']['tl_pixabay']['editors_choice'],
             'inputType'        => 'checkbox',
-            'eval'             => array('tl_class'=>'w50'),
+            'eval'             => array('tl_class'=>'clr w50'),
             'sql'              => "char(1) NOT NULL default ''"
         ),
         'safesearch' => array
@@ -163,6 +175,16 @@ class tl_pixabay extends Backend
     public function getOrientation(DataContainer $dc)
     {
         return array_keys(\Trilobit\PixabayBundle\Helper::getConfigData()['orientation']);
+    }
+
+
+    /**
+     * @param DataContainer $dc
+     * @return array
+     */
+    public function getColors(DataContainer $dc)
+    {
+        return array_keys(\Trilobit\PixabayBundle\Helper::getConfigData()['colors']);
     }
 
 

@@ -3,20 +3,24 @@
 /**
  * Contao Open Source CMS
  *
- * Copyright (c) 2005-2017 Leo Feyer
+ * Copyright (C) 2005-2014 Leo Feyer
  *
- * @license LGPL-3.0+
+ * @package     Trilobit
+ * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license     LGPL-3.0-or-later
+ * @copyright   trilobit GmbH
  */
 
 namespace Trilobit\PixabayBundle;
 
-use Config;
-use StringUtil;
+use Contao\Config;
+use Contao\File;
+use Contao\Input;
+use Contao\StringUtil;
+use Contao\System;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Response;
-use System;
 use Trilobit\PixabayBundle\Helper;
-
 
 /**
  * Class PixabayApi
@@ -33,8 +37,8 @@ class PixabayApi
     protected function prepareApiPrameter()
     {
         // check query
-        if (   (!\Input::get('q')  || \Input::get('q') === '')
-            && (!\Input::get('id') || \Input::get('id') === '')
+        if (   (!Input::get('q')  || Input::get('q') === '')
+            && (!Input::get('id') || Input::get('id') === '')
         )
         {
             self::apiResponse();
@@ -43,10 +47,10 @@ class PixabayApi
 
         $strResponseGroup = 'image_details';
 
-        if (   \Input::get('response_group')
-            && in_array(\Input::get('response_group'), array('image_details', 'high_resolution')))
+        if (   Input::get('response_group')
+            && in_array(Input::get('response_group'), array('image_details', 'high_resolution')))
         {
-            $strResponseGroup = \Input::get('response_group');
+            $strResponseGroup = Input::get('response_group');
         }
 
         // prepare parameter for api call
@@ -55,7 +59,7 @@ class PixabayApi
 
         foreach ($arrApiParameter as $key => $value)
         {
-            if (\Input::get($key) && \Input::get($key) !== '')
+            if (Input::get($key) && Input::get($key) !== '')
             {
                 if (strtolower($value) === 'bool')
                 {
@@ -63,11 +67,11 @@ class PixabayApi
                 }
                 else if (strtolower($value) === 'int')
                 {
-                    $arrApiParameter[$key] = intval(\Input::get($key), 10);
+                    $arrApiParameter[$key] = intval(Input::get($key), 10);
                 }
                 else
                 {
-                    $arrApiParameter[$key] = \Input::get($key);
+                    $arrApiParameter[$key] = Input::get($key);
                 }
 
                 continue;
@@ -79,11 +83,11 @@ class PixabayApi
         return $arrApiParameter;
     }
 
-
     /**
      * @param bool $blnIsAjax
      * @param array $arrApiParameter
      * @return array|mixed|null
+     * @throws \Exception
      */
     public function search($blnIsAjax=true, $arrApiParameter=array())
     {
@@ -121,7 +125,7 @@ class PixabayApi
         // Load the cached result
         if (file_exists(TL_ROOT . '/' . $strCacheFile))
         {
-            $objFile = new \File($strCacheFile);
+            $objFile = new File($strCacheFile);
 
             if ($objFile->mtime > time() - 60*60*24)
             {
@@ -147,7 +151,7 @@ class PixabayApi
                 $arrResult['__api__']['cache']     = $strChecksum;
                 $arrResult['__api__']['tstamp']    = time();
 
-                \File::putContent($strCacheFile, json_encode($arrResult));
+                File::putContent($strCacheFile, json_encode($arrResult));
 
                 $arrResult['__api__']['cachedResult'] = false;
             }
@@ -170,12 +174,12 @@ class PixabayApi
         return $arrResult;
     }
 
-
     /**
      * @param $strApiUrl
      * @param $strApiKey
      * @param $arrApiParameter
      * @return mixed
+     * @throws \Symfony\Component\Config\Definition\Exception\Exception
      */
     protected function apiCall($strApiUrl, $strApiKey, $arrApiParameter)
     {
@@ -217,7 +221,6 @@ class PixabayApi
 
         return $returnValue;
     }
-
 
     /**
      * @param array $arrResult

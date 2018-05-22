@@ -1,12 +1,14 @@
-
 <?php
 
 /**
  * Contao Open Source CMS
  *
- * Copyright (c) 2005-2017 Leo Feyer
+ * Copyright (C) 2005-2014 Leo Feyer
  *
- * @license LGPL-3.0+
+ * @package     Trilobit
+ * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license     LGPL-3.0-or-later
+ * @copyright   trilobit GmbH
  */
 
 // Load language file(s)
@@ -19,7 +21,7 @@ System::loadLanguageFile('tl_pixabay');
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace
 (
     ';{proxy_legend',
-    ';{pixabay_legend:hide},pixabayApiKey,pixabayApiUrl,pixabayHighResolution,pixabayImageSource;{proxy_legend',
+    ';{pixabay_legend:hide},pixabayApiKey,pixabayApiUrl,pixabayImageSource;{proxy_legend',
     $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']
 );
 

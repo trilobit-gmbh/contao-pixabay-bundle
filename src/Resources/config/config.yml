@@ -1,5 +1,7 @@
 trilobit:
     pixabay:
+        api_url: 'https://pixabay.com/api/'
+
         api:
             q:
             id:

@@ -21,7 +21,7 @@ System::loadLanguageFile('tl_pixabay');
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace
 (
     ';{proxy_legend',
-    ';{pixabay_legend:hide},pixabayApiKey,pixabayApiUrl,pixabayImageSource;{proxy_legend',
+    ';{pixabay_legend:hide},pixabayApiKey,pixabayImageSource;{proxy_legend',
     $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']
 );
 
@@ -47,13 +47,6 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayImageSource'] = array
     'options_callback' => array('tl_settings_pixabay', 'getImageSource'),
     'reference'        => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source'],
     'eval'             => array('chosen'=>true, 'tl_class'=>'clr w50'),
-);
-
-$GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayApiUrl'] = array
-(
-    'label'     => &$GLOBALS['TL_LANG']['tl_pixabay']['pixabayApiUrl'],
-    'inputType' => 'text',
-    'eval'      => array('tl_class'=>'w50')
 );
 
 

@@ -20,7 +20,6 @@ use Contao\StringUtil;
 use Contao\System;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\HttpFoundation\Response;
-use Trilobit\PixabayBundle\Helper;
 
 /**
  * Class PixabayApi
@@ -91,7 +90,8 @@ class PixabayApi
      */
     public function search($blnIsAjax=true, $arrApiParameter=array())
     {
-        $strApiUrl = Config::get('pixabayApiUrl');
+        //$strApiUrl = Config::get('pixabayApiUrl');
+        $strApiUrl = Helper::getConfigData()['api_url'];
         $strApiKey = Config::get('pixabayApiKey');
 
         // check api-url, api-key

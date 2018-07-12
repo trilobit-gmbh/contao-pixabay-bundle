@@ -86,17 +86,6 @@ class DC_Folder_pixabay extends \DC_Folder
                 $blnHighResolution = Config::get('pixabayHighResolution');
                 $strImageSource    = (empty(Config::get('pixabayImageSource')) ? 'largeImageURL' : Config::get('pixabayImageSource'));
 
-                /*
-                if (   $blnHighResolution
-                    && isset($arrApiData['__api__']['parameter']['q'])
-                )
-                {
-                    $arrApiData['__api__']['parameter']['response_group'] = 'high_resolution';
-
-                    $arrApiDataHighResolution = PixabayApi::search(false, $arrApiData['__api__']['parameter']);
-                }
-                */
-
                 if (empty($arrApiData))
                 {
                     Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
@@ -104,6 +93,9 @@ class DC_Folder_pixabay extends \DC_Folder
                 }
 
                 // prepare default result
+
+                $blnImageSource = true;
+
                 foreach ($arrApiData['hits'] as $value)
                 {
                     if (!in_array($value['id'], Input::post('tl_pixabay_imageIds'))) continue;
@@ -118,44 +110,30 @@ class DC_Folder_pixabay extends \DC_Folder
                     (
                         'files' => array
                         (
-                            'api'      => $strFileNameTmp,
-                            'download' => preg_replace('/^(.*)_(.*?)\.(.*?)$/', '$1_960.$3', $value['webformatURL']),
-                            'contao'   => $strFileNameNew,
+                            'api'    => $strFileNameTmp,
+                            'contao' => $strFileNameNew,
                         ),
-                        'values'       => $value,
+                        'values' => $value,
                     );
 
-                    $arrApiData['id'][$value['id']]['files']['download'] = $value[$strImageSource];
 
-                    /*
-                    if ($blnHighResolution)
+                    $strDownload = $value[$strImageSource];
+
+                    if (empty($value[$strImageSource]))
                     {
-                        $arrApiData['id'][$value['id']]['files']['download'] = $value[$strImageSource];
+                        $blnImageSource = false;
+                        $strDownload = preg_replace('/^(.*)_(.*?)\.(.*?)$/', '$1_960.$3', $value['webformatURL']);
                     }
-                    */
 
-                    // update with high resolution result
-                    /*
-                    if ($blnHighResolution && count($arrApiDataHighResolution['hits']))
-                    {
-                        foreach ($arrApiDataHighResolution['hits'] as $valueHighResolution)
-                        {
-                            $arrHighResolution = pathinfo($valueHighResolution['webformatURL']);
-                            $arrDefault = pathinfo($value['webformatURL']);
-
-                            $intLength = 14;
-
-                            if (substr($arrHighResolution['basename'], 0, $intLength) == substr($arrDefault['basename'], 0, $intLength))
-                            {
-                                $arrApiData['id'][$value['id']]['values'] = array_merge($arrApiData['id'][$value['id']]['values'], $valueHighResolution);
-                                $arrApiData['id'][$value['id']]['files']['download'] = $valueHighResolution[$strImageSource];
-
-                                break;
-                            }
-                        }
-                    }
-                    */
+                    $arrApiData['id'][$value['id']]['files']['download'] = $strDownload;
                 }
+
+                if (!$blnImageSource)
+                {
+                    Message::addError(sprintf($GLOBALS['TL_LANG']['ERR']['imageSourceNotAvailable'], $strImageSource));
+                    System::log('Pixabay image source "' . $strImageSource . '" not available; extended "webformatURL" used instead', __METHOD__, TL_FILES);
+                }
+
 
                 // Upload the files
                 $arrUploaded = array();

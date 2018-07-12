@@ -137,3 +137,5 @@ $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['webformatURL']  = 
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['largeImageURL'] = '1280 Pixel Breite [largeImageURL]';
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['fullHDURL']     = '1920 Pixel Breite [fullHDURL]';
 $GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source']['imageURL']      = 'original [imageURL]';
+
+$GLOBALS['TL_LANG']['ERR']['imageSourceNotAvailable'] = 'Die gewünschte Bildquelle "%s" ist nicht mit diesem API-Key verfügbar. Es wurde stattdessen "webformatURL" verwendet.<br>Weitere Informationen unter <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener noreferrer"><u>pixabay.com/api/docs/</u></a>.';

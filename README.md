@@ -1,4 +1,4 @@
-Contao Extension: TrilobitPixabayBundle
+TrilobitPixabayBundle
 ==============================================
 
 Mit der Pixabay Erweiterung können sie über die Dateiverwaltung von Contao Bilder oder Fotos von der freien Bilddatenbank Pixabay herunterladen. Um Pixabay benutzen zu können, benötigen sie eine API-Key, den sie nach der Registrierung bei Pixabay anfordern können. Sie können außerdem Voreinstellungen für die Pixabay-Suche in der Benutzerverwaltung festlegen.

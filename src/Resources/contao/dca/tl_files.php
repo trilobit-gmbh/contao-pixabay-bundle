@@ -65,6 +65,6 @@ class tl_files_pixabay extends Backend
      */
     public function pixabay($href, $label, $title, $class, $attributes)
     {
-        return $this->User->hasAccess('f6', 'fop') ? '<a href="'.$this->addToUrl($href).'" title="'.StringUtil::specialchars($title).'" class="'.$class.'"'.$attributes.'>'.$label.'</a> ' : '';
+        return $this->User->hasAccess('pixabay', 'fop') ? '<a href="'.$this->addToUrl($href).'" title="'.StringUtil::specialchars($title).'" class="'.$class.'"'.$attributes.'>'.$label.'</a> ' : '';
     }
 }

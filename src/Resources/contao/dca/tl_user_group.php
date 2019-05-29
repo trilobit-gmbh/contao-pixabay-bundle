@@ -8,4 +8,4 @@
  * @license LGPL-3.0-or-later
  */
 
-$GLOBALS['TL_DCA']['tl_user_group']['fields']['fop']['options']['pixabay'] = 'pixabay';
+$GLOBALS['TL_DCA']['tl_user_group']['fields']['fop']['options'][] = 'pixabay';

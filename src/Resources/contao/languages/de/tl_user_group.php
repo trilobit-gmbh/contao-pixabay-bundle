@@ -11,4 +11,3 @@
  * @copyright   trilobit GmbH
  */
 
-$GLOBALS['TL_LANG']['FOP']['pixabay'] = 'pixabay';

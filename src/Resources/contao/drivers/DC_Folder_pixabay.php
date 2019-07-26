@@ -144,13 +144,45 @@ class DC_Folder_pixabay extends \DC_Folder
                     $strFileDownload = $arrApiData['id'][$value]['files']['download'];
                     $strFileContao   = $arrApiData['id'][$value]['files']['contao'];
 
+                    /*
                     // get files
                     $stream = file_get_contents($strFileDownload);
 
-                    $fileHandle = fopen(TL_ROOT . '/' . $strFileTmp, "w");
+                    $fileHandle = fopen(TL_ROOT.'/'.$strFileTmp, 'w');
 
                     fwrite($fileHandle, $stream);
                     fclose($fileHandle);
+                    */
+
+                    // file handle
+                    $fileHandle = fopen(TL_ROOT.'/'.$strFileTmp, 'w');
+
+                    // get file: curl
+                    $objCurl = curl_init($strFileDownload);
+
+                    curl_setopt($objCurl, CURLOPT_HEADER, false);
+                    curl_setopt($objCurl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($objCurl, CURLOPT_BINARYTRANSFER, true);
+
+                    curl_setopt($objCurl, CURLOPT_USERAGENT, 'Contao Pixabay API');
+                    curl_setopt($objCurl, CURLOPT_COOKIEJAR, TL_ROOT.'/system/tmp/curl.cookiejar.txt');
+                    curl_setopt($objCurl, CURLOPT_FOLLOWLOCATION, true);
+                    curl_setopt($objCurl, CURLOPT_ENCODING, '');
+                    curl_setopt($objCurl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($objCurl, CURLOPT_AUTOREFERER, true);
+                    curl_setopt($objCurl, CURLOPT_SSL_VERIFYPEER, false);    // required for https urls
+                    curl_setopt($objCurl, CURLOPT_CONNECTTIMEOUT, 30);
+                    curl_setopt($objCurl, CURLOPT_TIMEOUT, 30);
+                    curl_setopt($objCurl, CURLOPT_MAXREDIRS, 10);
+
+                    $stream = curl_exec($objCurl);
+                    $returnCode = curl_getinfo($objCurl, CURLINFO_HTTP_CODE);
+
+                    // write
+                    fwrite($fileHandle, $stream);
+                    fclose($fileHandle);
+
+                    curl_close($objCurl);
 
                     // move file to target
                     $this->import('Files');

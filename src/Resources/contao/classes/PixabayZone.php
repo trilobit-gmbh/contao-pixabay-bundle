@@ -1,42 +1,213 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2017 Leo Feyer
- *
- * @package     Trilobit
- * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
- * @license     LGPL-3.0-or-later
- * @copyright   trilobit GmbH
+/*
+ * @copyright  trilobit GmbH
+ * @author     trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license    LGPL-3.0-or-later
+ * @link       http://github.com/trilobit-gmbh/contao-pixabay-bundle
  */
 
 namespace Trilobit\PixabayBundle;
 
 use Contao\Config;
-use Contao\FileUpload;
 use Contao\Controller;
+use Contao\Dbafs;
+use Contao\Environment;
+use Contao\FileUpload;
 use Contao\Input;
-use Trilobit\PixabayBundle\Helper;
+use Contao\Message;
+use Contao\System;
 
 /**
- * Class PixabayZone
- * @package Trilobit\PixabayBundle
+ * Class PixabayZone.
  *
  * @author trilobit GmbH <https://github.com/trilobit-gmbh>
  */
 class PixabayZone extends FileUpload
 {
-
     /**
-     * @return string
+     * Check the uploaded files and move them to the target directory.
+     *
+     * @param string $strTarget
+     *
      * @throws \Exception
+     *
+     * @return array
      */
+    public function uploadTo($strTarget)
+    {
+        // Prepare file data
+        $arrApiData = Helper::getCacheData(Input::post('tl_pixabay_cache'));
+
+        $arrApiDataHighResolution = [];
+
+        $blnHighResolution = Config::get('pixabayHighResolution');
+        $strImageSource = (empty(Config::get('pixabayImageSource')) ? 'largeImageURL' : Config::get('pixabayImageSource'));
+
+        if (empty($arrApiData)) {
+            Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
+            $this->reload();
+        }
+
+        if ('' === $strTarget || \Validator::isInsecurePath($strTarget)) {
+            throw new \InvalidArgumentException('Invalid target path '.$strTarget);
+        }
+
+        $blnImageSource = true;
+
+        foreach ($arrApiData['hits'] as $value) {
+            if (!\in_array((string) $value['id'], Input::post('tl_pixabay_imageIds'), true)) {
+                continue;
+            }
+            $arrPathParts = pathinfo(urldecode($value['webformatURL']));
+            $strFileNameTmp = $strTarget.'/'.$arrPathParts['basename'];
+
+            $arrPathPartsNew = pathinfo(urldecode($value['pageURL']));
+
+            // Sanitize the filename
+            try {
+                $arrPathPartsNew['basename'] = \StringUtil::sanitizeFileName($arrPathPartsNew['basename']);
+            } catch (\InvalidArgumentException $e) {
+                \Message::addError($GLOBALS['TL_LANG']['ERR']['filename']);
+                $this->blnHasError = true;
+
+                continue;
+            }
+
+            $strFileNameNew = $strTarget.'/'.$arrPathPartsNew['basename'].'.'.$arrPathParts['extension'];
+
+            $arrApiData['id'][$value['id']] = [
+                'files' => [
+                    'api' => $strFileNameTmp,
+                    'contao' => $strFileNameNew,
+                ],
+                'values' => $value,
+            ];
+
+            $strDownload = $value[$strImageSource];
+
+            if (empty($value[$strImageSource])) {
+                $blnImageSource = false;
+                $strDownload = preg_replace('/^(.*)_(.*?)\.(.*?)$/', '$1_960.$3', $value['webformatURL']);
+            }
+
+            $arrApiData['id'][$value['id']]['files']['download'] = $strDownload;
+        }
+
+        if (!$blnImageSource) {
+            Message::addError(sprintf($GLOBALS['TL_LANG']['ERR']['imageSourceNotAvailable'], $strImageSource));
+            System::log('Pixabay image source "'.$strImageSource.'" not available; extended "webformatURL" used instead', __METHOD__, TL_FILES);
+        }
+
+        // Upload the files
+        $maxlength_kb = $this->getMaximumUploadSize();
+        $maxlength_kb_readable = $this->getReadableSize($maxlength_kb);
+        $arrUploaded = [];
+
+        $arrLanguages = \Contao\Database::getInstance()
+            ->prepare("SELECT COUNT(language) AS language_count, language FROM tl_page WHERE type='root' AND published=1 GROUP BY language ORDER BY language_count DESC")
+            ->limit(1)
+            ->execute()
+            ->fetchAllAssoc();
+
+        if (empty($arrLanguages[0]['language'])) {
+            $arrLanguages[0]['language'] = 'en';
+        }
+
+        foreach (Input::post('tl_pixabay_imageIds') as $value) {
+            $strFileTmp = 'system/tmp/'.md5(uniqid(mt_rand(), true));
+            $strFileDownload = $arrApiData['id'][$value]['files']['download'];
+            $strNewFile = $arrApiData['id'][$value]['files']['contao'];
+
+            /*
+            // get files
+            $stream = file_get_contents($strFileDownload);
+
+            $fileHandle = fopen(TL_ROOT.'/'.$strFileTmp, 'w');
+
+            fwrite($fileHandle, $stream);
+            fclose($fileHandle);
+            */
+
+            // file handle
+            $fileHandle = fopen(TL_ROOT.'/'.$strFileTmp, 'w');
+
+            // get file: curl
+            $objCurl = curl_init($strFileDownload);
+
+            curl_setopt($objCurl, CURLOPT_HEADER, false);
+            curl_setopt($objCurl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($objCurl, CURLOPT_BINARYTRANSFER, true);
+
+            curl_setopt($objCurl, CURLOPT_USERAGENT, 'Contao Pixabay API');
+            curl_setopt($objCurl, CURLOPT_COOKIEJAR, TL_ROOT.'/system/tmp/curl.cookiejar.txt');
+            curl_setopt($objCurl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($objCurl, CURLOPT_ENCODING, '');
+            curl_setopt($objCurl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($objCurl, CURLOPT_AUTOREFERER, true);
+            curl_setopt($objCurl, CURLOPT_SSL_VERIFYPEER, false);    // required for https urls
+            curl_setopt($objCurl, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($objCurl, CURLOPT_TIMEOUT, 30);
+            curl_setopt($objCurl, CURLOPT_MAXREDIRS, 10);
+
+            $stream = curl_exec($objCurl);
+            $returnCode = curl_getinfo($objCurl, CURLINFO_HTTP_CODE);
+
+            // write
+            fwrite($fileHandle, $stream);
+            fclose($fileHandle);
+
+            curl_close($objCurl);
+
+            // move file to target
+            $this->import('Files');
+
+            // Set CHMOD and resize if neccessary
+            if ($this->Files->rename($strFileTmp, $strNewFile)) {
+                $this->Files->chmod($strNewFile, Config::get('defaultFileChmod'));
+
+                $objFile = Dbafs::addResource($strNewFile);
+
+                $objFile->meta = serialize([
+                    $arrLanguages[0]['language'] => [
+                        'title' => 'ID: '.$value
+                            .' | '
+                            .'Tags: '.$arrApiData['id'][$value]['values']['tags']
+                            .' | '
+                            .'User: '.$arrApiData['id'][$value]['values']['user'],
+                        'alt' => 'Pixabay: '.$arrApiData['id'][$value]['values']['pageURL'],
+                    ],
+                ]);
+
+                $objFile->save();
+
+                // Notify the user
+                Message::addConfirmation(sprintf($GLOBALS['TL_LANG']['MSC']['fileUploaded'], $strNewFile));
+
+                System::log('File "'.$strNewFile.'" has been uploaded', __METHOD__, TL_FILES);
+
+                // Resize the uploaded image if necessary
+                $this->resizeUploadedImage($strNewFile);
+
+                $arrUploaded[] = $strNewFile;
+            }
+        }
+
+        if (empty($arrUploaded)) {
+            Message::addError($GLOBALS['TL_LANG']['ERR']['emptyUpload']);
+            $this->reload();
+        }
+
+        $this->blnHasError = false;
+
+        return $arrUploaded;
+    }
+
     public function generateMarkup()
     {
         Controller::loadLanguageFile('tl_pixabay');
 
-        $arrCache        = Helper::getCacheData(Input::get('cache'));
+        $arrCache = Helper::getCacheData(Input::get('cache'));
         $arrApiParameter = Helper::getConfigData()['api'];
 
         $arrGlobalsConfig = $GLOBALS['TL_CONFIG'];
@@ -44,34 +215,25 @@ class PixabayZone extends FileUpload
         $pixabay_search = '';
         $blnPixabayCache = false;
 
-        if (count($arrCache))
-        {
+        if (\count($arrCache)) {
             $blnPixabayCache = true;
             $pixabay_search = $arrCache['__api__']['parameter']['q'];
         }
 
         $this->import('BackendUser', 'User');
 
+        foreach ($arrApiParameter as $key => $value) {
+            $GLOBALS['TL_CONFIG'][$key] = $this->User->{('order' === $key ? 'priority' : $key)};
 
-        foreach ($arrApiParameter as $key => $value)
-        {
-            $GLOBALS['TL_CONFIG'][$key] = $this->User->{($key === 'order' ? 'priority' : $key)};
-
-            if (   $blnPixabayCache
+            if ($blnPixabayCache
                 && isset($arrCache['__api__']['parameter'][$key])
-                && $arrCache['__api__']['parameter'][$key] !== ''
-            )
-            {
-                if (strtolower($value) === 'bool')
-                {
+                && '' !== $arrCache['__api__']['parameter'][$key]
+            ) {
+                if ('bool' === strtolower($value)) {
                     $GLOBALS['TL_CONFIG'][$key] = 1;
-                }
-                else if (strtolower($value) === 'int')
-                {
-                    $GLOBALS['TL_CONFIG'][$key] = intval($arrCache['__api__']['parameter'][$key], 10);
-                }
-                else
-                {
+                } elseif ('int' === strtolower($value)) {
+                    $GLOBALS['TL_CONFIG'][$key] = \intval($arrCache['__api__']['parameter'][$key], 10);
+                } else {
                     $GLOBALS['TL_CONFIG'][$key] = $arrCache['__api__']['parameter'][$key];
                 }
             }
@@ -81,17 +243,15 @@ class PixabayZone extends FileUpload
         $return = '
 <input type="hidden" name="action" value="pixabayupload">
 
-<div class="tl_box">
-    <div class="widget">
-        <div id="pixabay_inform">
-            <h2>'.$GLOBALS['TL_LANG']['tl_pixabay']['poweredBy'][0] .'</h2>
-            <br>
-            <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer"><img src="/bundles/trilobitpixabay/logo.png" width=100 height=100 style="margin-right: 15px"></a>
-            <a href="https://www.trilobit.de" target="_blank" rel="noopener noreferrer"><img src="/bundles/trilobitpixabay/trilobit_gmbh.svg" width="auto" height="50"></a><br>
-            <div class="hint"><br><br><span>'.$GLOBALS['TL_LANG']['MSC']['pixabay']['hint'].'</span></div>
-        </div>
-    </div>
+<div id="pixabay_inform">
+    <h2>'.$GLOBALS['TL_LANG']['tl_pixabay']['poweredBy'][0].'</h2>
+    <br>
+    <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer"><img src="/bundles/trilobitpixabay/logo.png" width=100 height=100 style="margin-right:30px"></a>
+    <a href="https://www.trilobit.de" target="_blank" rel="noopener noreferrer"><img src="/bundles/trilobitpixabay/trilobit_gmbh.svg" width="auto" height="50"></a><br>
+    <div class="hint"><br><br><span>'.$GLOBALS['TL_LANG']['MSC']['pixabay']['hint'].'</span></div>
 </div>
+
+</div></div>
 
 <div id="pixabay_form">
     <fieldset id="pal_pixabay_search_legend" class="tl_box">
@@ -107,16 +267,6 @@ class PixabayZone extends FileUpload
             <button class="tl_submit">'.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabay'].'</button>
             <p class="tl_help tl_tip">'.$GLOBALS['TL_LANG']['tl_pixabay']['searchPixabay'][1].'</p>
         </div>
-      
-        <!---<div class="w50 widget cbx">
-            <div id="ctrl_pixabay_id_search" class="tl_checkbox_single_container">
-                <input type="hidden" name="pixabay_id_search" value="">
-                <input type="checkbox" name="pixabay_id_search" id="opt_pixabay_id_search_0" class="tl_checkbox" value="1" onclick="($$(\'#opt_pixabay_id_search_0:checked\').length ? $$(\'#pal_pixabay_filter_legend\').addClass(\'invisible\') : $$(\'#pal_pixabay_filter_legend\').removeClass(\'invisible\'))" onfocus="Backend.getScrollOffset()">
-                <label for="opt_pixabay_id_search_0">'.$GLOBALS['TL_LANG']['tl_pixabay']['searchId'][0].'</label>
-            </div>
-
-            <p class="tl_help tl_tip" title="">'.$GLOBALS['TL_LANG']['tl_pixabay']['searchId'][1].'</p>
-        </div>--->
     </fieldset>
 
     '.Helper::generateFilterPalette().'
@@ -130,6 +280,8 @@ class PixabayZone extends FileUpload
         </div>
     </fieldset>
 </div>
+
+<div><div>
 
 <script>
     window.addEventListener("load", function(event) {
@@ -191,7 +343,7 @@ class PixabayZone extends FileUpload
 
         // html: open pagination container
         strHtmlPagination = \'<div class="pagination">\'
-            + \'<p>Seite \' + pixabayPage + \' von \' + pixabayPages + \'<\/p>\'
+            + \'<p>'.preg_replace('/^(.*?)%s(.*?)%s(.*?)$/', '$1\' + pixabayPage + \'$2\' + pixabayPages + \'$3', $GLOBALS['TL_LANG']['MSC']['totalPages']).'<\/p>\'
             + \'<ul>\'
             ;
 
@@ -259,15 +411,14 @@ class PixabayZone extends FileUpload
 
         if (pixabayJsonData.totalHits > 0)
         {
-            //$$(\'div.tl_formbody_submit\').removeClass(\'invisible\');
-
             strHtmlImages = \'\'
                 + \'<input type="hidden" name="tl_pixabay_images" value="">\'
                 + \'<input type="hidden" name="tl_pixabay_imageIds" value="">\'
                 + \'<input type="hidden" name="tl_pixabay_cache" value="\' + pixabayJsonData.__api__.cache + \'">\'
                 + \'<div class="widget">\'
-                + \'<h3>\' + pixabayJsonData.totalHits + \''.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'].'<\/h3>\'
+                + \'<h3>\' + pixabayJsonData.totalHits + \' '.$GLOBALS['TL_LANG']['MSC']['pixabay']['searchPixabayResult'].'<\/h3>\'
                 + \'<\/div>\'
+                + \'<div class="flex-container">\'
                 ;
 
             for (var key in pixabayJsonData.hits)
@@ -276,26 +427,19 @@ class PixabayZone extends FileUpload
                 {
                     var value = pixabayJsonData.hits[key];
 
-                    var previewWidth  = value.webformatWidth;
-                    var previewHeight = value.webformatHeight;
-                    var pageURL       = value.pageURL;
-                    var tags          = value.tags;
-                    var previewURL    = value.webformatURL;
-                    var downloadId    = value.id;
-    
                     strHtmlImages += \'\'
                         + \'<div class="widget preview" id="pixabay_preview_\' + key + \'">\'
                             + \'<label for="pixabay_image_\' + key + \'">\'
-                            + \'<div class="image-container">\'
-                                + \'<a href="contao/popup?src=\' + pageURL + \'" \'
-                                    + \' title="\' + tags + \'" \'
-                                    + \' onclick="Backend.openModalIframe({title:\\\'\' + tags + \'\\\', url:\\\'\' + pageURL + \'\\\'});return false" \'
+                            + \'<div class="image-container" style="background-image:url(\' + value.webformatURL + \')">\'
+                                + \'<a href="contao/popup?src=\' + value.pageURL + \'" \'
+                                    + \' title="\' + value.tags + \'" \'
+                                    + \' onclick="Backend.openModalIframe({title:\\\'\' + value.tags + \'\\\', url:\\\'\' + value.pageURL + \'\\\'});return false" \'
                                 + \'>\'
-                                    + \'<img src="\' + previewURL + \'" width="\' + previewWidth + \'" height="\' + previewHeight + \'">\'
+                                    + \'<!---<img src="\' + value.webformatURL + \'" width="\' + value.webformatWidth + \'" height="\' + value.webformatHeight + \'">--->\'
                                 + \'<\/a>\'
                             + \'<\/div>\'
                             + \'<br>\'
-                            + \'<input type="checkbox" id="pixabay_image_\' + key + \'" value="\' + downloadId + \'" name="tl_pixabay_imageIds[]" onclick="$$(\\\'#pixabay_preview_\' + key + \'\\\').toggleClass(\\\'selected\\\')">\'
+                            + \'<input type="checkbox" id="pixabay_image_\' + key + \'" value="\' + value.id + \'" name="tl_pixabay_imageIds[]" onclick="$$(\\\'#pixabay_preview_\' + key + \'\\\').toggleClass(\\\'selected\\\')">\'
                                 + \'ID: <strong>\' + value.id + \'<\/strong>\'
                             + \'<table class="tl_show">\'
                                 + \'<tbody>\'
@@ -330,6 +474,8 @@ class PixabayZone extends FileUpload
                         ;
                 }
             }
+            
+            strHtmlImages += \'<\/div>\';
 
             strHtmlImages += (pixabayJsonData.__api__.cachedResult ? \'<br clear="all"><div class="widget"><p class="tl_help tl_tip">\' + strHtmlCachedResult + \'<\/p><\/div>\' : \'\');
 
@@ -362,37 +508,35 @@ class PixabayZone extends FileUpload
         pixabayImages.innerHTML = \'<div class="spinner"><\/div>\';
 
         var xhr = new XMLHttpRequest();
-
-        var url =\'trilobit/pixabay\'
-            + \'?\' + ($$(\'input[name="pixabay_id_search"]:checked\').length ? \'id\' : \'q\') + \'=\' + encodeURIComponent(search)
+        var url =\''.ampersand(Environment::get('script'), true).'/trilobit/pixabay\'
+            + \'?q=\' + encodeURIComponent(search)
             + \'&lang=\' + language
-            ;
-        
-        if (!$$(\'input[name="pixabay_id_search"]:checked\').length)
-        {
-            url += \'&editors_choice=\' + $$(\'input[name="editors_choice"]:checked\').length
-                + \'&safesearch=\'     + $$(\'input[name="safesearch"]:checked\').length
-                + \'&orientation=\'    + $$(\'select[name="orientation"] option:selected\').get(\'value\')
-                + \'&order=\'          + $$(\'select[name="order"] option:selected\').get(\'value\')
-                + \'&image_type=\'     + $$(\'select[name="image_type"] option:selected\').get(\'value\')
-                + \'&category=\'       + $$(\'select[name="category"] option:selected\').get(\'value\')
-                + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
-                + \'&min_width=\'      + $$(\'input[name="min_width"]\').get(\'value\')
-                + \'&min_height=\'     + $$(\'input[name="min_height"]\').get(\'value\')
-                + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
-                + \'&page=\'           + pixabayPage
-                + \'&per_page=\'       + resultsPerPage
-                ;       
-        }
+            
+            + \'&editors_choice=\' + $$(\'input[name="editors_choice"]:checked\').length
+            + \'&safesearch=\'     + $$(\'input[name="safesearch"]:checked\').length
+            + \'&orientation=\'    + $$(\'select[name="orientation"] option:selected\').get(\'value\')
+            + \'&order=\'          + $$(\'select[name="order"] option:selected\').get(\'value\')
+            + \'&image_type=\'     + $$(\'select[name="image_type"] option:selected\').get(\'value\')
+            + \'&category=\'       + $$(\'select[name="category"] option:selected\').get(\'value\')
+            + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
+            + \'&min_width=\'      + $$(\'input[name="min_width"]\').get(\'value\')
+            + \'&min_height=\'     + $$(\'input[name="min_height"]\').get(\'value\')
+            + \'&colors=\'         + $$(\'select[name="colors"] option:selected\').get(\'value\')
+            
+            + \'&page=\'     + pixabayPage
+            + \'&per_page=\' + resultsPerPage
+            ;       
         
         xhr.open(\'GET\', url);
         xhr.onreadystatechange = function()
         {
+            var pixabayJsonData = pixabayJsonData || {};
+
             if (   this.status == 200
                 && this.readyState == 4
             )
             {
-                var pixabayJsonData = JSON.parse(this.responseText);
+                pixabayJsonData = JSON.parse(this.responseText);
 
                 if (   pixabayJsonData
                     && pixabayJsonData.__api__
@@ -409,11 +553,11 @@ class PixabayZone extends FileUpload
                 return false;
             }
 
-            var pixabayJsonData = pixabayJsonData || {};
-                pixabayJsonData.__api__ = pixabayJsonData.__api__ || {};;
+            pixabayJsonData = pixabayJsonData || {};
+            pixabayJsonData.__api__ = pixabayJsonData.__api__ || {};;
 
-                pixabayJsonData.__api__.exceptionId = this.status;
-                pixabayJsonData.__api__.exceptionMessage = \'[ERROR \' + this.status + \'] Please try again...\';
+            pixabayJsonData.__api__.exceptionId = this.status;
+            pixabayJsonData.__api__.exceptionMessage = \'[ERROR \' + this.status + \'] Please try again...\';
 
             pixabayException(pixabayJsonData);
 
@@ -464,9 +608,11 @@ class PixabayZone extends FileUpload
     
     if (blnAuoSearch) pixabaySearchUpdate('.$GLOBALS['TL_CONFIG']['page'].');
 </script>';
-        
+
         $GLOBALS['TL_CONFIG'] = $arrGlobalsConfig;
 
         return $return;
     }
 }
+
+class_alias(PixabayZone::class, 'PixabayZone');

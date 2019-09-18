@@ -1,23 +1,17 @@
 <?php
 
-/**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2017 Leo Feyer
- *
- * @package     Trilobit
- * @author      trilobit GmbH <https://github.com/trilobit-gmbh>
- * @license     LGPL-3.0-or-later
- * @copyright   trilobit GmbH
+/*
+ * @copyright  trilobit GmbH
+ * @author     trilobit GmbH <https://github.com/trilobit-gmbh>
+ * @license    LGPL-3.0-or-later
+ * @link       http://github.com/trilobit-gmbh/contao-pixabay-bundle
  */
 
 namespace Trilobit\PixabayBundle\ContaoManager;
 
-use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
+use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
-
-use Contao\ManagerPlugin\Config\ConfigPluginInterface;
 use Contao\ManagerPlugin\Routing\RoutingPluginInterface;
 use Symfony\Component\Config\Loader\LoaderResolverInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -44,8 +38,8 @@ class Plugin implements BundlePluginInterface, RoutingPluginInterface
     public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel)
     {
         return $resolver
-            ->resolve(dirname(__FILE__) . '/../Resources/config/routing.yml')
-            ->load(dirname(__FILE__) . '/../Resources/config/routing.yml')
+            ->resolve(__DIR__.'/../Resources/config/routing.yml')
+            ->load(__DIR__.'/../Resources/config/routing.yml')
             ;
     }
 }

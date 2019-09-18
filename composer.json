@@ -10,12 +10,12 @@
         }
     ],
     "require": {
-        "php": "^5.6|^7.0",
         "contao/core-bundle": "~4.4",
-        "trilobit-gmbh/contao-dcfolder": "^1.0"
+        "ext-curl": "*"
     },
     "require-dev": {
-        "contao/manager-plugin": "^2.0"
+        "contao/manager-plugin": "^2.0",
+        "friendsofphp/php-cs-fixer": "^2.1"
     },
     "conflict": {
         "contao/manager-plugin": "<2.0 || >=3.0"

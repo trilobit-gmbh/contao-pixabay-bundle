@@ -18,6 +18,13 @@ Installation
 
 Install the extension via composer: [trilobit-gmbh/contao-pixabay-bundle](https://packagist.org/packages/trilobit-gmbh/contao-pixabay-bundle).
 
+And add the following code (with the API-Key from the Pixabay Website) to the config.yml of your project. You may have to create a config.yml, if it doesn't exist in your project. The config.yml is or has to be located in the app/config directory in Contao 4.4 and in the config directory in Contao 4.8.    
+
+    contao:
+      localconfig:
+        pixabayApiKey: 'Your API-Key'
+        pixabayImageSource: 'largeImageURL'
+
 
 Compatibility
 -------------

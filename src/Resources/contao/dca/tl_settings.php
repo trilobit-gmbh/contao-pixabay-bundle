@@ -7,17 +7,10 @@
  * @link       http://github.com/trilobit-gmbh/contao-pixabay-bundle
  */
 
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
+
 // Load language file(s)
 System::loadLanguageFile('tl_pixabay');
-
-/*
- * System configuration
- */
-$GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace(
-    ';{proxy_legend',
-    ';{pixabay_legend:hide},pixabayApiKey,pixabayImageSource;{proxy_legend',
-    $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']
-);
 
 // Fields
 $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayApiKey'] = [
@@ -29,7 +22,7 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayApiKey'] = [
 $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayHighResolution'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_pixabay']['pixabayHighResolution'],
     'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'clr w50'],
+    'eval' => ['tl_class' => 'w50'],
 ];
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayImageSource'] = [
@@ -37,8 +30,15 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['pixabayImageSource'] = [
     'inputType' => 'select',
     'options_callback' => ['tl_settings_pixabay', 'getImageSource'],
     'reference' => &$GLOBALS['TL_LANG']['tl_pixabay']['options']['image_source'],
-    'eval' => ['chosen' => true, 'tl_class' => 'clr w50'],
+    'eval' => ['chosen' => true, 'tl_class' => 'w50'],
 ];
+
+PaletteManipulator::create()
+    ->addLegend('pixabay_legend', 'proxy_legend', PaletteManipulator::POSITION_BEFORE)
+    ->addField(['pixabayApiKey', 'pixabayImageSource'], 'pixabay_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('default', 'tl_settings')
+;
+
 
 /**
  * Class tl_settings_pixabay.

@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "php": "^7.0",
         "contao/core-bundle": "~4.4",
         "ext-curl": "*"
     },

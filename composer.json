@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "^7.0",
-        "contao/core-bundle": "~4.4",
+        "contao/core-bundle": "^4.4 || ^4.9",
         "ext-curl": "*"
     },
     "require-dev": {

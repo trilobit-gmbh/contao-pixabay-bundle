@@ -35,6 +35,9 @@
             "src/Resources/contao/templates/"
         ]
     },
+    "suggest": {
+        "trilobit-gmbh/contao-worldofimages-bundle": "for Contao 4.9, 4.13, 5.x and support for Flickr, Pexels, Pixabay and Unsplash"
+    },
     "extra": {
         "contao-manager-plugin": "Trilobit\\PixabayBundle\\ContaoManager\\Plugin"
     }
